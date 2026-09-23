@@ -175,15 +175,22 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         return renderer;
     };
 
+    let cleanStrayMermaidElements = () => {
+        document.querySelectorAll('body > svg[id^="dmermaid"], body > div[id^="dmermaid"], body > svg[id^="mermaid-"], body > div[id^="mermaid-"]').forEach((el) => el.remove());
+    };
+
     let configureMermaid = (theme) => {
         mermaid.initialize({
             startOnLoad: false,
             securityLevel: 'strict',
-            theme
+            theme,
+            suppressErrorRendering: true
         });
+        mermaid.parseError = () => {};
     };
 
     let showMermaidError = (element, error) => {
+        cleanStrayMermaidElements();
         const message = error && error.message ? error.message : 'Unable to render Mermaid chart.';
         element.classList.add('mermaid-error');
         element.textContent = `Mermaid render error: ${message}`;
@@ -202,6 +209,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
         const version = ++mermaidRenderVersion;
         configureMermaid(theme);
 
+        cleanStrayMermaidElements();
         const elements = Array.from(outputElement.querySelectorAll('.mermaid'));
         for (const [index, element] of elements.entries()) {
             if (version !== mermaidRenderVersion) {
@@ -226,6 +234,7 @@ This web site is using ${"`"}markedjs/marked${"`"}.
                 showMermaidError(element, error);
             }
         }
+        cleanStrayMermaidElements();
     };
 
     let scheduleMermaidRender = () => {
